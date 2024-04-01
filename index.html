@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refill Reminder Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+    }
+    .container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="date"], input[type="number"], input[type="email"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 18px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #email-label {
+      margin-top: 10px;
+    }
+    #email {
+      font-size: 18px;
+    }
+    #reminder-message {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Refill Reminder Calculator</h2>
+    <form id="reminderForm">
+      <label for="dispensing-date">Dispensing Date:</label>
+      <input type="date" id="dispensing-date">
+      <label for="days-supply">Days Supply:</label>
+      <input type="number" id="days-supply" min="1" placeholder="Enter days supply">
+      <label for="refill-reminder">Refill Reminder (Optional):</label>
+      <input type="number" id="refill-reminder" min="0" placeholder="Enter days before refill reminder">
+      <label id="email-label" for="email">Email:</label>
+      <input type="email" id="email" required>
+      <p id="reminder-message">A reminder email will be sent to the email address above on the refill reminder date.</p>
+      <button type="submit">Calculate & Send Reminder</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById('reminderForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+
+      const email = document.getElementById('email').value;
+      const dispensingDate = new Date(document.getElementById('dispensing-date').value);
+      const daysSupply = parseInt(document.getElementById('days-supply').value);
+      const refillReminder = parseInt(document.getElementById('refill-reminder').value) || 0;
+
+      const millisecondsPerDay = 24 * 60 * 60 * 1000;
+      const refillDate = new Date(dispensingDate.getTime() + (daysSupply * millisecondsPerDay));
+      const reminderDate = new Date(refillDate.getTime() - (refillReminder * millisecondsPerDay));
+
+      const formattedRefillDate = refillDate.toLocaleDateString('en-US');
+      const formattedReminderDate = reminderDate.toLocaleDateString('en-US');
+
+      document.getElementById('result').innerHTML = `
+        <p>Refill Date: ${formattedRefillDate}</p>
+        <p>Refill Reminder Date: ${formattedReminderDate}</p>
+        <p>Please remind the patients to review the emails received from pharmcalculator@gmail.com. Rest assured, these emails are not phishing attempts</p>
+      `;
+
+      sendEmail(email, formattedReminderDate);
+    });
+
+    function sendEmail(email, reminderDate) {
+      // Import the required modules
+      const nodemailer = require('nodemailer');
+
+      // Create a transporter object with your Gmail account credentials
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'pharmcalculator@gmail.com',
+          pass: 'nlhudfgaszetlhpg'
+        }
+      });
+
+      // Define the email options
+      const mailOptions = {
+        from: 'pharmcalculator@gmail.com',
+        to: email,
+        subject: 'Refill Reminder',
+        text: `This is a reminder from PharmCalculator. Your refill is due on ${reminderDate}.`
+      };
+
+      // Send the email
+      transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+         console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
